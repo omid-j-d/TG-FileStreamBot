@@ -1,24 +1,28 @@
 # This file is a part of TG-FileStreamBot
 # Coding : Jyothis Jayanth [@EverythingSuckz]
 
-import sys
 import asyncio
 import logging
-from .vars import Var
+import sys
+
 from aiohttp import web
 from pyrogram import idle
-from WebStreamer import utils
-from WebStreamer import StreamBot
-from WebStreamer.server import web_server
-from WebStreamer.bot.clients import initialize_clients
 
+from WebStreamer import StreamBot, utils
+from WebStreamer.bot.clients import initialize_clients
+from WebStreamer.server import web_server
+
+from .vars import Var
 
 logging.basicConfig(
     level=logging.INFO,
     datefmt="%d/%m/%Y %H:%M:%S",
     format="[%(asctime)s][%(levelname)s] => %(message)s",
-    handlers=[logging.StreamHandler(stream=sys.stdout),
-              logging.FileHandler("streambot.log", mode="a", encoding="utf-8")],)
+    handlers=[
+        logging.StreamHandler(stream=sys.stdout),
+        logging.FileHandler("streambot.log", mode="a", encoding="utf-8"),
+    ],
+)
 
 logging.getLogger("aiohttp").setLevel(logging.ERROR)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
@@ -32,6 +36,7 @@ if sys.version_info[1] > 9:
 else:
     loop = asyncio.get_event_loop()
 
+
 async def start_services():
     print()
     print("-------------------- Initializing Telegram Bot --------------------")
@@ -40,9 +45,7 @@ async def start_services():
     StreamBot.username = bot_info.username
     print("------------------------------ DONE ------------------------------")
     print()
-    print(
-        "---------------------- Initializing Clients ----------------------"
-    )
+    print("---------------------- Initializing Clients ----------------------")
     await initialize_clients()
     print("------------------------------ DONE ------------------------------")
     if Var.ON_HEROKU:
@@ -65,9 +68,11 @@ async def start_services():
     print("------------------------------------------------------------------")
     await idle()
 
+
 async def cleanup():
     await server.cleanup()
     await StreamBot.stop()
+
 
 if __name__ == "__main__":
     try:

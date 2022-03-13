@@ -2,9 +2,11 @@
 # Coding : Jyothis Jayanth [@EverythingSuckz]
 
 
-from ..vars import Var
-from pyrogram import Client
 from os import getcwd
+
+from pyrogram import Client
+
+from ..vars import Var
 
 StreamBot = Client(
     session_name="WebStreamer",

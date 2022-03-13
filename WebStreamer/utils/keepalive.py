@@ -1,7 +1,9 @@
 import asyncio
 import logging
-import aiohttp
 import traceback
+
+import aiohttp
+
 from WebStreamer import Var
 
 

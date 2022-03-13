@@ -1,28 +1,31 @@
 # Taken from megadlbot_oss <https://github.com/eyaadh/megadlbot_oss/blob/master/mega/webserver/routes.py>
 # Thanks to Eyaadh <https://github.com/eyaadh>
 
-import re
-import time
-import math
 import logging
-import secrets
+import math
 import mimetypes
+import re
+import secrets
+
 from aiohttp import web
 from aiohttp.http_exceptions import BadStatusLine
+
+from WebStreamer import Var, utils
 from WebStreamer.bot import multi_clients, work_loads
 from WebStreamer.server.exceptions import FIleNotFound, InvalidHash
-from WebStreamer import Var, utils, StartTime, __version__, StreamBot
-
 
 routes = web.RouteTableDef()
 
+
 @routes.get("/", allow_head=True)
 async def root_route_handler(_):
-    return web.FileResponse('WebStreamer/template/home.html')
+    return web.FileResponse("WebStreamer/template/home.html")
+
 
 @routes.get("/arc-sw.js", allow_head=True)
 async def arc_route_handler(_):
-    return web.FileResponse('WebStreamer/template/arc-sw.js')
+    return web.FileResponse("WebStreamer/template/arc-sw.js")
+
 
 @routes.get(r"/{path:\S+}", allow_head=True)
 async def stream_handler(request: web.Request):
@@ -38,24 +41,26 @@ async def stream_handler(request: web.Request):
         return await media_streamer(request, message_id, secure_hash)
     except InvalidHash as e:
         logging.error(e.messagex)
-        return web.FileResponse('WebStreamer/template/404.html')
+        return web.FileResponse("WebStreamer/template/404.html")
     except FIleNotFound as e:
         logging.error(e.message)
-        return web.FileResponse('WebStreamer/template/404.html')
+        return web.FileResponse("WebStreamer/template/404.html")
     except (AttributeError, BadStatusLine, ConnectionResetError):
         pass
     except Exception as e:
         logging.critical(e.with_traceback(None))
-        return web.FileResponse('WebStreamer/template/error.html')
+        return web.FileResponse("WebStreamer/template/error.html")
+
 
 class_cache = {}
 
+
 async def media_streamer(request: web.Request, message_id: int, secure_hash: str):
     range_header = request.headers.get("Range", 0)
-    
+
     index = min(work_loads, key=work_loads.get)
     faster_client = multi_clients[index]
-    
+
     if Var.MULTI_CLIENT:
         logging.info(f"Client {index} is now serving {request.remote}")
 
@@ -69,11 +74,11 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
     logging.debug("before calling get_file_properties")
     file_id = await tg_connect.get_file_properties(message_id)
     logging.debug("after calling get_file_properties")
-    
+
     if file_id.unique_id[:6] != secure_hash:
         logging.debug(f"Invalid hash for message with ID {message_id}")
         raise InvalidHash
-    
+
     file_size = file_id.file_size
 
     if range_header:
@@ -91,7 +96,13 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
     last_part_cut = (until_bytes % new_chunk_size) + 1
     part_count = math.ceil(req_length / new_chunk_size)
     body = tg_connect.yield_file(
-        file_id, index, offset, first_part_cut, last_part_cut, part_count, new_chunk_size
+        file_id,
+        index,
+        offset,
+        first_part_cut,
+        last_part_cut,
+        part_count,
+        new_chunk_size,
     )
 
     mime_type = file_id.mime_type
